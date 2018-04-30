@@ -66,6 +66,8 @@ public class GroupDBHelper extends SQLiteOpenHelper {
     }
 
     public ArrayList<GroupItem> getData() {
+        createTableIfNotExists();
+        
         ArrayList<GroupItem> list = new ArrayList<>();
 
         SQLiteDatabase database = getReadableDatabase();
