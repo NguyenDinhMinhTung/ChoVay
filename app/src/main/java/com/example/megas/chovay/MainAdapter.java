@@ -18,13 +18,11 @@ public class MainAdapter extends RecyclerView.Adapter<MainViewHolder> {
     private ArrayList<MainItem> list;
     OnClickListener onClickListener;
 
-    public MainAdapter(ArrayList<MainItem> list) {
+    public MainAdapter(ArrayList<MainItem> list, OnClickListener onClickListener) {
         this.list = list;
-    }
-
-    public void setOnClickListener(OnClickListener onClickListener){
         this.onClickListener=onClickListener;
     }
+
     @Override
     public MainViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view= LayoutInflater.from(parent.getContext()).inflate(R.layout.item,parent,false);
@@ -33,20 +31,35 @@ public class MainAdapter extends RecyclerView.Adapter<MainViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(MainViewHolder holder, int position) {
+    public void onBindViewHolder(MainViewHolder holder, final int position) {
         MainItem item=list.get(position);
         holder.txtName.setText(item.getName());
         holder.txtMoney.setText(String.valueOf(item.getMoney()));
+
+        holder.txtName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onClickListener.OnClick(position);
+            }
+        });
+
+        holder.txtMoney.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onClickListener.OnClick(position);
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
         return list.size();
     }
-}
 
-interface OnClickListener{
-    public void OnClick();
+    public interface OnClickListener{
+        void OnClick(int position);
+    }
+
 }
 
 class MainViewHolder extends RecyclerView.ViewHolder{

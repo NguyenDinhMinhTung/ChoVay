@@ -60,13 +60,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
         mainDatabase = new MainDBHelper(this);
         moneyDatabase = new MoneyDBHelper(this);
-        list = mainDatabase.getData();
 
-        for (int i = 0; i < list.size(); i++) {
-            list.get(i).setMoney(moneyDatabase.getMoney(list.get(i).getId()));
-        }
-        adapter = new MainAdapter(list);
-        recyclerView.setAdapter(adapter);
+        refreshList();
     }
 
     public void refreshList() {
@@ -75,7 +70,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         for (int i = 0; i < list.size(); i++) {
             list.get(i).setMoney(moneyDatabase.getMoney(list.get(i).getId()));
         }
-        adapter = new MainAdapter(list);
+        adapter = new MainAdapter(list,  new MainAdapter.OnClickListener() {
+            @Override
+            public void OnClick(int position) {
+                Intent intent = new Intent(MainActivity.this, MoneyItemList.class);
+
+                ArrayList<MoneyItem> moneyList = moneyDatabase.getData(list.get(position).getId());
+                intent.putExtra("list", moneyList);
+                startActivity(intent);
+            }
+        });
+
         recyclerView.setAdapter(adapter);
     }
 
