@@ -62,8 +62,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (childView != null && e.getAction() == MotionEvent.ACTION_UP) {
                     Intent intent = new Intent(MainActivity.this, MoneyItemList.class);
 
-                    ArrayList<MoneyItem> moneyList = moneyDatabase.getData(list.get(rv.getChildPosition(childView)).getId());
-                    intent.putExtra("list", moneyList);
+                    ArrayList<MoneyItem> moneyList = moneyDatabase.getData(mainList.get(rv.getChildPosition(childView)).getId());
+                    intent.putExtra("mainList", moneyList);
                     startActivity(intent);
                 }*/
                 return false;
@@ -134,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (view.getId()) {
             case R.id.floatingActionButton:
                 Intent intent = new Intent(this, AddItem.class);
-                intent.putExtra("list", list);
+                intent.putExtra("mainList", list);
                 startActivityForResult(intent, 0);
                 break;
         }
