@@ -4,6 +4,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import org.w3c.dom.Text;
@@ -20,21 +22,21 @@ public class MainAdapter extends RecyclerView.Adapter<MainViewHolder> {
 
     public MainAdapter(ArrayList<MainItem> list, OnClickListener onClickListener) {
         this.list = list;
-        this.onClickListener=onClickListener;
+        this.onClickListener = onClickListener;
     }
 
     @Override
     public MainViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view= LayoutInflater.from(parent.getContext()).inflate(R.layout.item,parent,false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item, parent, false);
 
         return new MainViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(MainViewHolder holder, final int position) {
-        MainItem item=list.get(position);
+        MainItem item = list.get(position);
         holder.txtName.setText(item.getName());
-        holder.txtMoney.setText(String.valueOf(item.getMoney()));
+        holder.txtMoney.setText(String.valueOf(item.getMoney())+"円");
 
         holder.txtName.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -49,6 +51,13 @@ public class MainAdapter extends RecyclerView.Adapter<MainViewHolder> {
                 onClickListener.OnClick(position);
             }
         });
+
+        holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                list.get(position).setChecked(b);
+            }
+        });
     }
 
     @Override
@@ -56,18 +65,20 @@ public class MainAdapter extends RecyclerView.Adapter<MainViewHolder> {
         return list.size();
     }
 
-    public interface OnClickListener{
+    public interface OnClickListener {
         void OnClick(int position);
     }
 
 }
 
-class MainViewHolder extends RecyclerView.ViewHolder{
+class MainViewHolder extends RecyclerView.ViewHolder {
     TextView txtName, txtMoney;
+    CheckBox checkBox;
 
     public MainViewHolder(View view) {
         super(view);
         txtName = view.findViewById(R.id.txtName);
         txtMoney = view.findViewById(R.id.txtMoney);
+        checkBox = view.findViewById(R.id.mainCheckbox);
     }
 }

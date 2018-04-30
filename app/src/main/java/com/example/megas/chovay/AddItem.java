@@ -8,26 +8,29 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
 public class AddItem extends AppCompatActivity implements View.OnClickListener {
     ArrayList<MainItem> list;
-    Spinner spinListName;
+    //Spinner spinListName;
     Button btnSave;
-    ArrayAdapter<MainItem> adapter;
-    EditText edtMoney, edtName, edtNote;
+    //ArrayAdapter<MainItem> adapter;
+    EditText edtMoney, edtNote;
+    AutoCompleteTextView edtName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_item);
 
-        spinListName = findViewById(R.id.spinListName);
+        //spinListName = findViewById(R.id.spinListName);
         btnSave = findViewById(R.id.btnSave);
         edtMoney = findViewById(R.id.edtMoney);
         edtName = findViewById(R.id.edtName);
@@ -37,9 +40,12 @@ public class AddItem extends AppCompatActivity implements View.OnClickListener {
 
         Intent intent = getIntent();
         list = (ArrayList<MainItem>) intent.getSerializableExtra("list");
-        list.add(new MainItem(-1, "new"));
 
-        adapter = new ArrayAdapter<MainItem>(this, android.R.layout.simple_spinner_item, list) {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, getListName(list));
+        edtName.setThreshold(1);
+        edtName.setAdapter(adapter);
+
+        /*adapter = new ArrayAdapter<MainItem>(this, android.R.layout.simple_spinner_item, list) {
             @NonNull
             @Override
             public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -56,25 +62,39 @@ public class AddItem extends AppCompatActivity implements View.OnClickListener {
                 textView.setText(list.get(position).getName());
                 return convertView;
             }
-        };
+        };*/
 
         //adapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
 
-        spinListName.setAdapter(adapter);
+        //spinListName.setAdapter(adapter);
+    }
+
+    public ArrayList<String> getListName(ArrayList<MainItem> mainList) {
+        ArrayList<String> list = new ArrayList<>();
+
+        for (int i = 0; i < mainList.size(); i++) {
+            list.add(mainList.get(i).getName());
+        }
+
+        return list;
     }
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btnSave:
-                Intent intent = new Intent();
-                //MoneyItem item = new MoneyItem(list.get(spinListName.getSelectedItemPosition()).getId(), Integer.parseInt(edtMoney.getText().toString()));
-                MoneyItem item = new MoneyItem(getID(edtName.getText().toString()), Integer.parseInt(edtMoney.getText().toString()),edtNote.getText().toString());
-                intent.putExtra("item", item);
-                intent.putExtra("name", edtName.getText().toString());
-                setResult(1, intent);
+                if (edtName.getText().toString().trim().length() == 0 || edtMoney.getText().toString().trim().length() == 0) {
+                    Toast.makeText(getApplicationContext(), "未入力項目があります！", Toast.LENGTH_SHORT).show();
+                } else {
+                    Intent intent = new Intent();
+                    //MoneyItem item = new MoneyItem(list.get(spinListName.getSelectedItemPosition()).getId(), Integer.parseInt(edtMoney.getText().toString()));
+                    MoneyItem item = new MoneyItem(getID(edtName.getText().toString()), 0, Integer.parseInt(edtMoney.getText().toString()), edtNote.getText().toString());
+                    intent.putExtra("item", item);
+                    intent.putExtra("name", edtName.getText().toString());
+                    setResult(1, intent);
 
-                finish();
+                    finish();
+                }
                 break;
         }
     }

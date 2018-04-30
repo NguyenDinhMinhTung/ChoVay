@@ -3,15 +3,17 @@ package com.example.megas.chovay;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import java.util.ArrayList;
 
 public class MoneyDBHelper extends SQLiteOpenHelper {
-    public static final String DATABASE_NAME = "DATA2";
+    public static final String DATABASE_NAME = "DATA";
     public static final String DB_TABLE_NAME = "money";
-    public static final String DB_ID = "id";
+    public static final String DB_MAIN_ID = "main_id";
+    public static final String DB_LOCAL_ID = "local_id";
     public static final String DB_MONEY = "money";
     public static final String DB_NOTE = "note";
 
@@ -21,37 +23,65 @@ public class MoneyDBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        sqLiteDatabase.execSQL("CREATE TABLE " + DB_TABLE_NAME + "(" + DB_ID + " INTEGER, " + DB_MONEY + " INTEGER, " + DB_NOTE + " NVARCHAR(100))");
+        sqLiteDatabase.execSQL("CREATE TABLE " + DB_TABLE_NAME + "(" + DB_LOCAL_ID + " INTEGER PRIMARY KEY, " + DB_MAIN_ID + " INTEGER, " + DB_MONEY + " INTEGER, " + DB_NOTE + " NVARCHAR(100))");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + DB_TABLE_NAME);
 
+        onCreate(sqLiteDatabase);
+    }
+
+    public void createTableIfNotExists() {
+        getWritableDatabase().execSQL("CREATE TABLE IF NOT EXISTS " + DB_TABLE_NAME + "(" + DB_LOCAL_ID + " INTEGER PRIMARY KEY, " + DB_MAIN_ID + " INTEGER, " + DB_MONEY + " INTEGER, " + DB_NOTE + " NVARCHAR(100))");
     }
 
     public void insert(MoneyItem item) {
+        createTableIfNotExists();
+
         SQLiteDatabase database = getWritableDatabase();
 
         ContentValues contentValues = new ContentValues();
 
         contentValues.put(DB_MONEY, item.getMoney());
-        contentValues.put(DB_ID, item.getId());
+        contentValues.put(DB_MAIN_ID, item.getMainID());
         contentValues.put(DB_NOTE, item.getNote());
-
+        contentValues.put(DB_LOCAL_ID, item.getLocalID());
         database.insert(DB_TABLE_NAME, null, contentValues);
 
         database.close();
     }
 
+    public long getNewLocalID() {
+        createTableIfNotExists();
+
+        SQLiteDatabase database = getReadableDatabase();
+        Cursor cursor = database.rawQuery("SELECT * FROM " + DB_TABLE_NAME + " ORDER BY " + DB_LOCAL_ID + " DESC", null);
+
+        cursor.moveToFirst();
+
+        long id = 1;
+        if (!cursor.isAfterLast()) {
+            id = cursor.getLong(cursor.getColumnIndex(DB_LOCAL_ID)) + 1;
+        }
+
+        database.close();
+        return id;
+    }
+
     public long getMoney(long itemID) {
+        createTableIfNotExists();
+
         long sum = 0;
 
         SQLiteDatabase database = getReadableDatabase();
+
         Cursor cursor = database.rawQuery("SELECT * FROM " + DB_TABLE_NAME, null);
         cursor.moveToFirst();
 
         while (cursor.isAfterLast() == false) {
-            long id = cursor.getLong(cursor.getColumnIndex(DB_ID));
+            long id = cursor.getLong(cursor.getColumnIndex(DB_MAIN_ID));
             if (id == itemID) {
                 long money = cursor.getLong(cursor.getColumnIndex(DB_MONEY));
                 sum += money;
@@ -71,17 +101,33 @@ public class MoneyDBHelper extends SQLiteOpenHelper {
         cursor.moveToFirst();
 
         while (cursor.isAfterLast() == false) {
-            long id = cursor.getLong(cursor.getColumnIndex(DB_ID));
-            if (id == itemID) {
+            long mainID = cursor.getLong(cursor.getColumnIndex(DB_MAIN_ID));
+            if (mainID == itemID) {
+                long localID = cursor.getLong(cursor.getColumnIndex(DB_LOCAL_ID));
                 long money = cursor.getLong(cursor.getColumnIndex(DB_MONEY));
                 String note = cursor.getString(cursor.getColumnIndex(DB_NOTE));
-                MoneyItem item = new MoneyItem(id, money, note);
+                MoneyItem item = new MoneyItem(mainID, localID, money, note);
                 list.add(item);
             }
             cursor.moveToNext();
         }
 
         return list;
+    }
 
+    public void deleteByMainId(long id) {
+        SQLiteDatabase database = getWritableDatabase();
+
+        database.delete(DB_TABLE_NAME, DB_MAIN_ID + " =?", new String[]{String.valueOf(id)});
+
+        database.close();
+    }
+
+    public void deleteByLocalId(long id) {
+        SQLiteDatabase database=getWritableDatabase();
+
+        database.delete(DB_TABLE_NAME,DB_LOCAL_ID+" =?",new String[]{String.valueOf(id)});
+
+        database.close();
     }
 }

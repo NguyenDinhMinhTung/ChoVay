@@ -4,6 +4,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -27,10 +29,17 @@ public class MoneyAdapter extends RecyclerView.Adapter<MoneyViewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(MoneyViewHolder holder, int position) {
+    public void onBindViewHolder(MoneyViewHolder holder, final int position) {
         MoneyItem item = list.get(position);
         holder.txtNote.setText(item.getNote());
-        holder.txtMoney.setText(String.valueOf(item.getMoney()));
+        holder.txtMoney.setText(String.valueOf(item.getMoney())+"円");
+
+        holder.checkbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                list.get(position).setChecked(b);
+            }
+        });
     }
 
     @Override
@@ -41,11 +50,13 @@ public class MoneyAdapter extends RecyclerView.Adapter<MoneyViewHolder> {
 
 class MoneyViewHolder extends RecyclerView.ViewHolder {
     TextView txtNote, txtMoney;
+    CheckBox checkbox;
 
     public MoneyViewHolder(View view) {
         super(view);
         txtNote = view.findViewById(R.id.txtNote);
         txtMoney = view.findViewById(R.id.txtMoney);
+        checkbox=view.findViewById(R.id.moneyCheckbox);
     }
 
 }

@@ -15,7 +15,8 @@ import java.util.ArrayList;
 public class MainDBHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "DATA";
     public static final String DB_TABLE_NAME = "main";
-    public static final String DB_ID = "id";
+    public static final String DB_MAIN_ID = "main_id";
+    public static final String DB_GROUP_ID = "group_id";
     public static final String DB_NAME = "name";
 
     public MainDBHelper(Context context) {
@@ -24,12 +25,14 @@ public class MainDBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        sqLiteDatabase.execSQL("CREATE TABLE " + DB_TABLE_NAME + "(" + DB_ID + " INTEGER PRIMARY KEY, " + DB_NAME + " NVARCHAR(100))");
+        sqLiteDatabase.execSQL("CREATE TABLE " + DB_TABLE_NAME + "(" + DB_MAIN_ID + " INTEGER PRIMARY KEY, " + DB_NAME + " NVARCHAR(100), "+DB_GROUP_ID+" INTEGER)");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + DB_TABLE_NAME);
 
+        onCreate(sqLiteDatabase);
     }
 
     public void insert(MainItem item) {
@@ -38,8 +41,8 @@ public class MainDBHelper extends SQLiteOpenHelper {
         ContentValues contentValues = new ContentValues();
 
         contentValues.put(DB_NAME, item.getName());
-        contentValues.put(DB_ID, item.getId());
-
+        contentValues.put(DB_MAIN_ID, item.getId());
+        contentValues.put(DB_GROUP_ID,item.getGroupID());
         database.insert(DB_TABLE_NAME, null, contentValues);
 
         database.close();
@@ -47,13 +50,13 @@ public class MainDBHelper extends SQLiteOpenHelper {
 
     public long getNewID() {
         SQLiteDatabase database = getReadableDatabase();
-        Cursor cursor = database.rawQuery("SELECT * FROM " + DB_TABLE_NAME + " ORDER BY " + DB_ID + " DESC", null);
+        Cursor cursor = database.rawQuery("SELECT * FROM " + DB_TABLE_NAME + " ORDER BY " + DB_MAIN_ID + " DESC", null);
 
         cursor.moveToFirst();
 
         long id = 1;
         if (!cursor.isAfterLast()) {
-            id = cursor.getLong(cursor.getColumnIndex(DB_ID)) + 1;
+            id = cursor.getLong(cursor.getColumnIndex(DB_MAIN_ID)) + 1;
         }
 
         database.close();
@@ -64,18 +67,26 @@ public class MainDBHelper extends SQLiteOpenHelper {
         ArrayList<MainItem> list = new ArrayList<>();
 
         SQLiteDatabase database = getReadableDatabase();
-        Cursor cursor = database.rawQuery("SELECT * FROM " + DB_TABLE_NAME + " ORDER BY " + DB_ID, null);
+        Cursor cursor = database.rawQuery("SELECT * FROM " + DB_TABLE_NAME + " ORDER BY " + DB_MAIN_ID, null);
         cursor.moveToFirst();
 
         while (cursor.isAfterLast() == false) {
-            long id = cursor.getLong(cursor.getColumnIndex(DB_ID));
+            long id = cursor.getLong(cursor.getColumnIndex(DB_MAIN_ID));
+            long groupID=cursor.getLong(cursor.getColumnIndex(DB_GROUP_ID));
             String name = cursor.getString(cursor.getColumnIndex(DB_NAME));
-            MainItem item = new MainItem(id, name);
+            MainItem item = new MainItem(id, name,groupID);
             list.add(item);
             cursor.moveToNext();
         }
 
         return list;
+    }
 
+    public void delete(long id) {
+        SQLiteDatabase database = getWritableDatabase();
+
+        database.delete(DB_TABLE_NAME, DB_MAIN_ID + " =?", new String[]{String.valueOf(id)});
+
+        database.close();
     }
 }

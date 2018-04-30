@@ -10,10 +10,18 @@ public class MainItem implements Serializable {
     private String name;
     private long id;
     private long money;
+    private long groupID;
+    private boolean checked=false;
 
-    public MainItem(long id, String name) {
+    public MainItem(long id, String name, long groupID) {
         this.name = name;
         this.id = id;
+        this.groupID=groupID;
+
+    }
+
+    public long getGroupID() {
+        return groupID;
     }
 
     public String getName() {
@@ -30,5 +38,14 @@ public class MainItem implements Serializable {
 
     public void setMoney(long money) {
         this.money = money;
+    }
+
+    public void setChecked(boolean checked) {
+        this.checked = checked;
+    }
+
+    public boolean isChecked() {
+
+        return checked;
     }
 }

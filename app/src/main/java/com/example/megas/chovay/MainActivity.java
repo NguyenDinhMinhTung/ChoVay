@@ -1,6 +1,7 @@
 package com.example.megas.chovay;
 
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -8,6 +9,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 
@@ -18,6 +21,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     FloatingActionButton fab;
     MainDBHelper mainDatabase;
     MoneyDBHelper moneyDatabase;
+    Button btnDelete;
+    TextView txtSum;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +31,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         recyclerView = findViewById(R.id.mainRecyclerView);
         fab = findViewById(R.id.floatingActionButton);
+        btnDelete = findViewById(R.id.btnDelete);
+        txtSum = findViewById(R.id.txtSum);
 
         recyclerView.setHasFixedSize(true);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
@@ -33,6 +40,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         recyclerView.setLayoutManager(linearLayoutManager);
 
         fab.setOnClickListener(this);
+
+        btnDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                for (int i = 0; i < list.size(); i++) {
+                    if (list.get(i).isChecked()) {
+                        mainDatabase.delete(list.get(i).getId());
+                        moneyDatabase.deleteByMainId(list.get(i).getId());
+                    }
+                }
+
+                refreshList();
+            }
+        });
 
         recyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
             @Override
@@ -61,7 +82,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mainDatabase = new MainDBHelper(this);
         moneyDatabase = new MoneyDBHelper(this);
 
+
         refreshList();
+    }
+
+    public void setSum() {
+        long sum = 0;
+
+        for (int i = 0; i < list.size(); i++) {
+            sum += list.get(i).getMoney();
+        }
+
+        txtSum.setText(String.valueOf(sum) + "円");
     }
 
     public void refreshList() {
@@ -69,19 +101,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         for (int i = 0; i < list.size(); i++) {
             list.get(i).setMoney(moneyDatabase.getMoney(list.get(i).getId()));
+            if (list.get(i).getMoney() == 0) {
+                mainDatabase.delete(list.get(i).getId());
+                list.remove(i);
+                i--;
+            }
         }
-        adapter = new MainAdapter(list,  new MainAdapter.OnClickListener() {
+
+        setSum();
+
+        adapter = new MainAdapter(list, new MainAdapter.OnClickListener() {
             @Override
             public void OnClick(int position) {
                 Intent intent = new Intent(MainActivity.this, MoneyItemList.class);
 
-                ArrayList<MoneyItem> moneyList = moneyDatabase.getData(list.get(position).getId());
-                intent.putExtra("list", moneyList);
+                intent.putExtra("mainID", list.get(position).getId());
                 startActivity(intent);
             }
         });
 
         recyclerView.setAdapter(adapter);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        refreshList();
     }
 
     @Override
@@ -99,14 +144,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 0 && resultCode == 1) {
             MoneyItem item = (MoneyItem) data.getSerializableExtra("item");
-            if (item.getId() >= 0) {
-                moneyDatabase.insert(item);
-            } else {
-                MainItem mainItem = new MainItem(mainDatabase.getNewID(), data.getStringExtra("name"));
-                item.setId(mainItem.getId());
+
+            if (item.getMainID() < 0) {
+                MainItem mainItem = new MainItem(mainDatabase.getNewID(), data.getStringExtra("name"),0);
+                item.setMainID(mainItem.getId());
                 mainDatabase.insert(mainItem);
-                moneyDatabase.insert(item);
             }
+
+            item.setLocalID(moneyDatabase.getNewLocalID());
+            moneyDatabase.insert(item);
 
             refreshList();
         }
