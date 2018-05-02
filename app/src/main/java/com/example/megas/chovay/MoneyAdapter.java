@@ -31,15 +31,17 @@ public class MoneyAdapter extends RecyclerView.Adapter<MoneyViewHolder> {
     @Override
     public void onBindViewHolder(MoneyViewHolder holder, final int position) {
         MoneyItem item = list.get(position);
-        holder.txtNote.setText(item.getNote());
-        holder.txtMoney.setText(String.valueOf(item.getMoney())+"円");
+        if (item.getState() == 1) {
+            holder.txtNote.setText(item.getNote());
+            holder.txtMoney.setText(String.valueOf(item.getMoney()) + "円");
 
-        holder.checkbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                list.get(position).setChecked(b);
-            }
-        });
+            holder.checkbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    list.get(position).setChecked(b);
+                }
+            });
+        }
     }
 
     @Override
@@ -56,7 +58,7 @@ class MoneyViewHolder extends RecyclerView.ViewHolder {
         super(view);
         txtNote = view.findViewById(R.id.txtNote);
         txtMoney = view.findViewById(R.id.txtMoney);
-        checkbox=view.findViewById(R.id.moneyCheckbox);
+        checkbox = view.findViewById(R.id.moneyCheckbox);
     }
 
 }

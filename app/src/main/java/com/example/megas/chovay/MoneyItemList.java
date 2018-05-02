@@ -48,14 +48,18 @@ public class MoneyItemList extends AppCompatActivity {
 
         Intent intent = getIntent();
         mainID = intent.getLongExtra("mainID", 0);
-        list = database.getData(mainID);
 
-        adapter = new MoneyAdapter(list);
-        recyclerView.setAdapter(adapter);
+        refreshList();
     }
 
     public void refreshList() {
         list = database.getData(mainID);
+
+        for (int i=0;i<list.size();i++){
+            if (list.get(i).getState()==0){
+                list.remove(i);
+            }
+        }
 
         adapter = new MoneyAdapter(list);
         recyclerView.setAdapter(adapter);

@@ -10,7 +10,7 @@
         android:id="@+id/btnDelete"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="選択した項目を削除"
+        android:text="払い済み"
         style="@style/button_style"
         android:layout_marginLeft="50dp"
         android:layout_marginRight="50dp"

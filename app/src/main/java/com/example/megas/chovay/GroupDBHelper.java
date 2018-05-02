@@ -48,6 +48,29 @@ public class GroupDBHelper extends SQLiteOpenHelper {
         database.close();
     }
 
+    public long insert(String name) {
+        createTableIfNotExists();
+
+        long groupID;
+        SQLiteDatabase database = getReadableDatabase();
+        Cursor cursor = database.rawQuery("SELECT * FROM " + DB_TABLE_NAME, null);
+        cursor.moveToFirst();
+
+        while (cursor.isAfterLast() == false) {
+            String groupName = cursor.getString(cursor.getColumnIndex(DB_GROUP_NAME));
+            if (groupName.compareTo(name) == 0) {
+                groupID = cursor.getLong(cursor.getColumnIndex(DB_GROUP_ID));
+                return groupID;
+            }
+            cursor.moveToNext();
+        }
+
+        groupID = getNewLocalID();
+        insert(new GroupItem(groupID, name));
+
+        return groupID;
+    }
+
     public long getNewLocalID() {
         createTableIfNotExists();
 
@@ -65,6 +88,22 @@ public class GroupDBHelper extends SQLiteOpenHelper {
         return id;
     }
 
+    public String findGroupNameByID(long id) {
+        String result = "";
+
+        SQLiteDatabase database = getReadableDatabase();
+        Cursor cursor = database.rawQuery("SELECT * FROM " + DB_TABLE_NAME + " WHERE " + DB_GROUP_ID + " = " + id, null);
+
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            result = cursor.getString(cursor.getColumnIndex(DB_GROUP_NAME));
+            cursor.moveToNext();
+        }
+
+        database.close();
+        return result;
+    }
+
     public ArrayList<GroupItem> getData() {
         createTableIfNotExists();
 
@@ -80,6 +119,8 @@ public class GroupDBHelper extends SQLiteOpenHelper {
             list.add(new GroupItem(groupID, groupName));
             cursor.moveToNext();
         }
+
+        database.close();
 
         return list;
     }

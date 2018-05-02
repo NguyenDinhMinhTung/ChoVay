@@ -35,29 +35,29 @@ public class MainAdapter extends RecyclerView.Adapter<MainViewHolder> {
     @Override
     public void onBindViewHolder(MainViewHolder holder, final int position) {
         MainItem item = list.get(position);
-        holder.txtName.setText(item.getName());
-        holder.txtMoney.setText(String.valueOf(item.getMoney())+"円");
+            holder.txtName.setText(item.getName());
+            holder.txtMoney.setText(String.valueOf(item.getMoney()) + "円");
 
-        holder.txtName.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onClickListener.OnClick(position);
-            }
-        });
+            holder.txtName.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    onClickListener.OnClick(position);
+                }
+            });
 
-        holder.txtMoney.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onClickListener.OnClick(position);
-            }
-        });
+            holder.txtMoney.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    onClickListener.OnClick(position);
+                }
+            });
 
-        holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                list.get(position).setChecked(b);
-            }
-        });
+            holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    list.get(position).setChecked(b);
+                }
+            });
     }
 
     @Override

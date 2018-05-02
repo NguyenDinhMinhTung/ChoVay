@@ -46,8 +46,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onClick(View view) {
                 for (int i = 0; i < list.size(); i++) {
                     if (list.get(i).isChecked()) {
-                        mainDatabase.delete(list.get(i).getId());
-                        moneyDatabase.deleteByMainId(list.get(i).getId());
+                        //mainDatabase.delete(list.get(i).getId());
+                        moneyDatabase.setToPaid(list.get(i).getId());
                     }
                 }
 
@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         for (int i = 0; i < list.size(); i++) {
             list.get(i).setMoney(moneyDatabase.getMoney(list.get(i).getId()));
             if (list.get(i).getMoney() == 0) {
-                mainDatabase.delete(list.get(i).getId());
+                /*mainDatabase.delete(list.get(i).getId());*/
                 list.remove(i);
                 i--;
             }
@@ -143,7 +143,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 0 && resultCode == 1) {
-            MoneyItem item = (MoneyItem) data.getSerializableExtra("item");
+       /*     MoneyItem item = (MoneyItem) data.getSerializableExtra("item");
 
             if (item.getMainID() < 0) {
                 MainItem mainItem = new MainItem(mainDatabase.getNewID(), data.getStringExtra("name"),0);
@@ -152,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
 
             item.setLocalID(moneyDatabase.getNewLocalID());
-            moneyDatabase.insert(item);
+            moneyDatabase.insert(item);*/
 
             refreshList();
         }

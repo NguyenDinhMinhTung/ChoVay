@@ -11,17 +11,28 @@ public class MainItem implements Serializable {
     private long id;
     private long money;
     private long groupID;
-    private boolean checked=false;
+    private boolean checked = false;
+    private boolean state = true;
 
     public MainItem(long id, String name, long groupID) {
         this.name = name;
         this.id = id;
-        this.groupID=groupID;
+        this.groupID = groupID;
 
     }
 
     public long getGroupID() {
         return groupID;
+    }
+
+    public void setState(boolean state) {
+        this.state = state;
+    }
+
+    public boolean isState() {
+
+
+        return state;
     }
 
     public String getName() {

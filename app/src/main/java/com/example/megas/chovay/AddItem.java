@@ -22,6 +22,8 @@ public class AddItem extends AppCompatActivity implements View.OnClickListener {
     EditText edtMoney, edtNote;
     AutoCompleteTextView edtName, edtGroup;
     GroupDBHelper groupDBHelper;
+    MainDBHelper mainDBHelper;
+    MoneyDBHelper moneyDBHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,23 +35,34 @@ public class AddItem extends AppCompatActivity implements View.OnClickListener {
         edtMoney = findViewById(R.id.edtMoney);
         edtName = findViewById(R.id.edtName);
         edtNote = findViewById(R.id.edtNote);
-        edtGroup=findViewById(R.id.edtGroup);
+        edtGroup = findViewById(R.id.edtGroup);
 
         btnSave.setOnClickListener(this);
 
-        groupDBHelper=new GroupDBHelper(this);
-        groupList=groupDBHelper.getData();
+        moneyDBHelper = new MoneyDBHelper(this);
+        mainDBHelper = new MainDBHelper(this);
+        groupDBHelper = new GroupDBHelper(this);
+        groupList = groupDBHelper.getData();
+
+        edtName.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    edtGroup.setText(groupDBHelper.findGroupNameByID(mainDBHelper.findGroupIDByName(edtName.getText().toString())));
+                }
+            }
+        });
 
         Intent intent = getIntent();
         mainList = (ArrayList<MainItem>) intent.getSerializableExtra("mainList");
 
-        ArrayAdapter<String> adapterName = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, getListName(mainList));
-        edtName.setThreshold(1);
+        ArrayAdapter<String> adapterName = new ArrayAdapter<>(this, android.R.layout.simple_list_item_activated_1, getListName(mainList));
+        edtName.setThreshold(0);
         edtName.setAdapter(adapterName);
 
-        ArrayAdapter<String> adapterGroup = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,getListGroup(groupList));
-        edtGroup.setThreshold(1);
-        edtName.setAdapter(adapterGroup);
+        ArrayAdapter<String> adapterGroup = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, getListGroup(groupList));
+        edtGroup.setThreshold(0);
+        edtGroup.setAdapter(adapterGroup);
         
         /*adapter = new ArrayAdapter<MainItem>(this, android.R.layout.simple_spinner_item, mainList) {
             @NonNull
@@ -99,15 +112,41 @@ public class AddItem extends AppCompatActivity implements View.OnClickListener {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btnSave:
-                if (edtName.getText().toString().trim().length() == 0 || edtMoney.getText().toString().trim().length() == 0) {
+                if ((edtName.getText().toString().trim().length() == 0 && edtGroup.getText().toString().trim().length() == 0)
+                        || edtMoney.getText().toString().trim().length() == 0) {
                     Toast.makeText(getApplicationContext(), "未入力項目があります！", Toast.LENGTH_SHORT).show();
                 } else {
-                    Intent intent = new Intent();
-                    //MoneyItem item = new MoneyItem(mainList.get(spinListName.getSelectedItemPosition()).getId(), Integer.parseInt(edtMoney.getText().toString()));
-                    MoneyItem item = new MoneyItem(getID(edtName.getText().toString()), 0, Integer.parseInt(edtMoney.getText().toString()), edtNote.getText().toString());
-                    intent.putExtra("item", item);
-                    intent.putExtra("name", edtName.getText().toString());
-                    setResult(1, intent);
+                    if (edtName.getText().toString().trim().length() == 0) {
+                        long groupID = groupDBHelper.insert(edtGroup.getText().toString());
+
+                        ArrayList<MainItem> mainItemsList = mainDBHelper.getDataByGroupID(groupID);
+
+                        for (int i = 0; i < mainItemsList.size(); i++) {
+                            MoneyItem moneyItem = new MoneyItem(mainItemsList.get(i).getId(), moneyDBHelper.getNewLocalID(),
+                                    Integer.parseInt(edtMoney.getText().toString()), edtNote.getText().toString(), 1);
+
+                            moneyDBHelper.insert(moneyItem);
+                        }
+                    } else {
+                        long mainID = getID(edtName.getText().toString());
+                        long groupID = groupDBHelper.insert(edtGroup.getText().toString());
+                        MainItem mainItem;
+
+                        if (mainID < 0) {
+                            mainItem = new MainItem(mainDBHelper.getNewID(), edtName.getText().toString(), groupID);
+                            mainDBHelper.insert(mainItem);
+                        } else {
+                            mainItem = new MainItem(mainID, edtName.getText().toString(), groupID);
+                            mainDBHelper.delete(mainID);
+
+                        }
+
+                        mainDBHelper.insert(mainItem);
+                        mainID = mainItem.getId();
+                        MoneyItem item = new MoneyItem(mainID, moneyDBHelper.getNewLocalID(),
+                                Integer.parseInt(edtMoney.getText().toString()), edtNote.getText().toString(), 1);
+                        moneyDBHelper.insert(item);
+                    }
 
                     finish();
                 }
